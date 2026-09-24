@@ -86,5 +86,5 @@ class Card:
             return CheckResult(False,'CARD_BLOCKED')
         if self.is_expired(as_of):
             return CheckResult(False,'CARD_EXPIRED')
-        return CheckResult(True,"OK")
+        return CheckResult(True)
 
