@@ -1,7 +1,7 @@
-from app.support.types import CheckResult, checked, identifier, choice, boolean, date_only, Repository
-from app.support.types import name as valid_name, country as valid_country
+# ЛР1: поля, конструктор и служебные проверки даны преподавателем.
+# Завершите отмеченные методы; API пока использует старые функции.
 from app.support.errors import DomainError
-
+from app.support.types import CheckResult, identifier, date_only, choice, boolean
 
 class Card:
     def __init__(self, card_id, customer_id, account_id, expiration_date, card_type, online_enabled=True, contactless_enabled=True):
@@ -54,42 +54,37 @@ class Card:
         return self._status
 
     def activate(self):
-        if self._status != "NEW":
+        if self._status!="NEW":
             raise DomainError("INVALID_STATE")
-        self._status = "ACTIVE"
+        self._status="ACTIVE"
 
     def block(self):
-        if self._status != "ACTIVE":
+        if self._status!="ACTIVE":
             raise DomainError("INVALID_STATE")
-        self._status = "BLOCKED"
+        self._status="BLOCKED"
 
     def unblock(self):
-        if self._status != "BLOCKED":
+        if self._status!="BLOCKED":
             raise DomainError("INVALID_STATE")
-        self._status = "ACTIVE"
+        self._status="ACTIVE"
 
     def close(self):
-        if self._status not in ("NEW", "ACTIVE", "BLOCKED"):
+        if self.status not in ('NEW', 'ACTIVE', 'BLOCKED'):
             raise DomainError("INVALID_STATE")
         self._status = "CLOSED"
 
-
     def is_expired(self, as_of):
         date_only(as_of)
-
         return as_of > self.expiration_date
 
     def availability(self, as_of):
-        date_only(as_of)
-    
-        if self._status == "NEW":
-            return CheckResult(False, "CARD_NOT_ACTIVE")
-        if self._status == "BLOCKED":
-            return CheckResult(False, "CARD_BLOCKED")
-        if self._status == "CLOSED":
-            return CheckResult(False, "CARD_CLOSED")
-    
-        if as_of > self._expiration_date:
-            return CheckResult(False, "CARD_EXPIRED")
+        if self._status=="CLOSED":
+            return CheckResult(False,'CARD_CLOSED')
+        if self._status=="NEW":
+            return CheckResult(False,'CARD_NOT_ACTIVATED')
+        if self._status=="BLOCKED":
+            return CheckResult(False,'CARD_BLOCKED')
+        if self.is_expired(as_of):
+            return CheckResult(False,'CARD_EXPIRED')
+        return CheckResult(True,"OK")
 
-        return CheckResult(True)
