@@ -54,7 +54,6 @@ class Card:
         return self._status
 
     def activate(self):
- lab02-galina-step1
         if self._status != "NEW":
             raise DomainError("INVALID_STATE")
         self._status = "ACTIVE"
@@ -75,22 +74,10 @@ class Card:
 
         self._status = "ACTIVE"
 
-    def block(self):
-        self._status = "BLOCKED"
-
-    def unblock(self):
-        self._status = "ACTIVE"
-
-    def close(self):
- main
-        self._status = "CLOSED"
 
     def is_expired(self, as_of):
         date_only(as_of)
- lab02-galina-step1
 
-
- main
         return as_of > self.expiration_date
 
     def availability(self, as_of):
@@ -105,9 +92,5 @@ class Card:
     
         if as_of > self._expiration_date:
             return CheckResult(False, "CARD_EXPIRED")
-    
- lab02-galina-step1
 
-
- main
         return CheckResult(True)
