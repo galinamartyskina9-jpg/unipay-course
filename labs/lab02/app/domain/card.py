@@ -71,8 +71,7 @@ class Card:
     def close(self):
         if self._status not in ("NEW", "ACTIVE", "BLOCKED"):
             raise DomainError("INVALID_STATE")
-
-        self._status = "ACTIVE"
+        self._status = "CLOSED"
 
 
     def is_expired(self, as_of):
