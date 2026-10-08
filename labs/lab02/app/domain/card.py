@@ -67,11 +67,19 @@ class Card:
 
     def is_expired(self, as_of):
         date_only(as_of)
-        return as_of >= self.expiration_date
+        return as_of > self.expiration_date
 
     def availability(self, as_of):
-        if self.status != "ACTIVE":
-            return CheckResult(False, "CARD_" + ("NOT_ACTIVE" if self.status == "NEW" else self.status))
-        if self.is_expired(as_of):
+        date_only(as_of)
+    
+        if self._status == "NEW":
+            return CheckResult(False, "CARD_NOT_ACTIVE")
+        if self._status == "BLOCKED":
+            return CheckResult(False, "CARD_BLOCKED")
+        if self._status == "CLOSED":
+            return CheckResult(False, "CARD_CLOSED")
+    
+        if as_of > self._expiration_date:
             return CheckResult(False, "CARD_EXPIRED")
+    
         return CheckResult(True)
