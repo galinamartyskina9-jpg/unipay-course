@@ -1,3 +1,5 @@
+from unittest import case
+
 from app.support.types import CheckResult, checked, identifier, choice, boolean, date_only, Repository
 from app.support.types import name as valid_name, country as valid_country
 from app.support.errors import DomainError
@@ -81,14 +83,15 @@ class Card:
 
     def availability(self, as_of):
         date_only(as_of)
-    
-        if self._status == "NEW":
-            return CheckResult(False, "CARD_NOT_ACTIVE")
-        if self._status == "BLOCKED":
-            return CheckResult(False, "CARD_BLOCKED")
-        if self._status == "CLOSED":
-            return CheckResult(False, "CARD_CLOSED")
-    
+
+        match self._status:
+            case "NEW":
+                return CheckResult(False, "CARD_NOT_ACTIVE")
+            case "BLOCKED":
+                return CheckResult(False, "CARD_BLOCKED")
+            case "CLOSED":
+                return CheckResult(False, "CARD_CLOSED")
+
         if as_of > self._expiration_date:
             return CheckResult(False, "CARD_EXPIRED")
 
