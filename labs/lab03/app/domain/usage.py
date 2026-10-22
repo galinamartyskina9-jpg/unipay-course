@@ -3,9 +3,12 @@ from app.support.types import CheckResult, checked, identifier, choice, boolean,
 from app.support.types import name as valid_name, country as valid_country
 from app.support.errors import DomainError
 
-class CardUsageRule:
+
+class CardUsageRule(ABC):
+    @abstractmethod
     def check(self, entity, context):
-        raise NotImplementedError
+        ...
+
 
 class AllowedCardTypeRule(CardUsageRule):
     def __init__(self, values):
@@ -14,11 +17,16 @@ class AllowedCardTypeRule(CardUsageRule):
             choice(value, ('STANDARD', 'VIRTUAL'), "INVALID_CONFIG")
 
     def check(self, entity, context):
-        return CheckResult(True)  # ЛР3: перенести проверку
+        if entity.card_type not in self._values:
+            return CheckResult(False, "CARD_TYPE_DENIED")
+        return CheckResult(True)
+
 
 class OnlineUsageRule(CardUsageRule):
     def __init__(self):
         self._channel = "ONLINE"
 
     def check(self, entity, context):
-        return CheckResult(True)  # ЛР3: перенести вторую проверку
+        if context.channel == self._channel and not entity.online_enabled:
+            return CheckResult(False, "CARD_ONLINE_DISABLED")
+        return CheckResult(True)

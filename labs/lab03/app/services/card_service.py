@@ -28,7 +28,15 @@ class CardService:
         self.get(key).close()
 
     def check(self, key, context):
-        raise NotImplementedError("ЛР3: реализуйте CardService.check по TASK.md")
+        card = self.get(key)
+        result = card.availability(context.as_of)
+        if not result.allowed:
+            return result
+        for rule in self._rules:
+            result = rule.check(card, context)
+            if not result.allowed:
+                return result
+        return CheckResult(True)
 
 def make_entity(*args, **kwargs):
     return Card(*args, **kwargs)
