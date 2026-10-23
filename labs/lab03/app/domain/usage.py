@@ -7,7 +7,7 @@ from app.support.errors import DomainError
 class CardUsageRule(ABC):
     @abstractmethod
     def check(self, entity, context):
-        ...
+        pass
 
 
 class AllowedCardTypeRule(CardUsageRule):
@@ -29,4 +29,11 @@ class OnlineUsageRule(CardUsageRule):
     def check(self, entity, context):
         if context.channel == self._channel and not entity.online_enabled:
             return CheckResult(False, "CARD_ONLINE_DISABLED")
+        return CheckResult(True)
+
+
+class ContactlessUsageRule(CardUsageRule):
+    def check(self, entity, context):
+        if not entity.contactless_enabled:
+            return CheckResult(False, "CARD_CONTACTLESS_DISABLED")
         return CheckResult(True)
