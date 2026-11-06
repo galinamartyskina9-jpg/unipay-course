@@ -78,16 +78,15 @@ class Card:
         return as_of > self.expiration_date
 
     def availability(self, as_of):
-        return legacy_l4_card_availability(self, as_of)
+        date_only(as_of)
+        if self.status != "ACTIVE":
+            return CheckResult(False, "CARD_" + ("NOT_ACTIVE" if self.status == "NEW" else self.status))
+        if self.is_expired(as_of):
+            return CheckResult(False, "CARD_EXPIRED")
+        return CheckResult(True)
 
     def describe(self):
         return f"{self.card_id}:{self.status}:{self.card_type}"
 
 
 # ЛР4: временный процедурный путь. Перенесите реализацию в названный метод объекта и удалите эту функцию.
-def legacy_l4_card_availability(owner, as_of):
-    if owner.status != 'ACTIVE':
-        return CheckResult(False, 'CARD_' + ('NOT_ACTIVE' if owner.status == 'NEW' else owner.status))
-    if owner.is_expired(as_of):
-        return CheckResult(False, 'CARD_EXPIRED')
-    return CheckResult(True)
