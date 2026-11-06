@@ -16,35 +16,22 @@ class CardService:
         return self._repository.get(key)
 
     def activate(self, key):
-        entity = self.get(key)
-        if entity.status not in ('NEW',):
-            raise DomainError("INVALID_STATE")
-        entity._status = "ACTIVE"
+        self.get(key).activate()
 
     def block(self, key):
-        entity = self.get(key)
-        if entity.status not in ('ACTIVE',):
-            raise DomainError("INVALID_STATE")
-        entity._status = "BLOCKED"
+        self.get(key).block()
 
     def unblock(self, key):
-        entity = self.get(key)
-        if entity.status not in ('BLOCKED',):
-            raise DomainError("INVALID_STATE")
-        entity._status = "ACTIVE"
+        self.get(key).unblock()
 
     def close(self, key):
-        entity = self.get(key)
-        if entity.status not in ('NEW', 'ACTIVE', 'BLOCKED'):
-            raise DomainError("INVALID_STATE")
-        entity._status = "CLOSED"
+        self.get(key).close()
 
     def check(self, key, context):
         entity = self.get(key)
-        if entity.status != "ACTIVE":
-            return CheckResult(False, "CARD_" + ("NOT_ACTIVE" if entity.status == "NEW" else entity.status))
-        if entity.is_expired(context.as_of):
-            return CheckResult(False, "CARD_EXPIRED")
+        result = entity.availability(context.as_of)
+        if not result.allowed:
+            return result
         for rule in self._rules:
             result = checked(rule.check(entity, context))
             if not result.allowed:
