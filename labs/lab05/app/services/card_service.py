@@ -1,4 +1,4 @@
-from app.support.types import CheckResult, checked, identifier, choice, boolean, date_only, Repository
+from app.support.types import CheckResult, CardContext, checked, identifier, choice, boolean, date_only, Repository
 from app.support.types import name as valid_name, country as valid_country
 from app.support.errors import DomainError
 from app.domain.card import Card
@@ -39,10 +39,10 @@ class CardService:
         return CheckResult(True)
 
     def check_dates(self, card_id, dates):
-        raise NotImplementedError("ЛР5: реализуйте CardService.check_dates по TASK.md")
+        return tuple((d, self.check(card_id, CardContext(d))) for d in dates)
 
     def allowed_dates(self, card_id, dates):
-        raise NotImplementedError("ЛР5: реализуйте CardService.allowed_dates по TASK.md")
+        return tuple(d for d, result in self.check_dates(card_id, dates) if result.allowed)
 
 def make_entity(*args, **kwargs):
     return Card(*args, **kwargs)
