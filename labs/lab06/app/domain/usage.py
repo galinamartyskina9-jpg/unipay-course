@@ -32,22 +32,37 @@ class OnlineUsageRule(CardUsageRule):
 class ContactlessUsageRule(CardUsageRule):
 
     def check(self, entity, context):
-        raise NotImplementedError("ЛР6: новое правило")
+        if context.contactless and not entity.contactless_enabled:
+            return CheckResult(False, "CONTACTLESS_DISABLED")
+        return CheckResult(True)
 
 
 class UsageRuleGroup(CardUsageRule):
     """Последовательность правил: первый отказ, без изменения входных объектов."""
 
     def __init__(self, rules):
-        raise NotImplementedError("ЛР6: реализуйте UsageRuleGroup.__init__ по TASK.md")
+        rules_tuple = tuple(rules)
+        for rule in rules_tuple:
+            if not isinstance(rule, CardUsageRule):
+                raise DomainError("INVALID_CONFIG")
+        self._rules = rules_tuple
 
     def check(self, entity, context):
-        raise NotImplementedError("ЛР6: реализуйте UsageRuleGroup.check по TASK.md")
+        for rule in self._rules:
+            result = checked(rule.check(entity, context))
+            if not result.allowed:
+                return result
+        return CheckResult(True)
 
 
 class ExpiryBufferRule(CardUsageRule):
     def __init__(self, minimum_days):
-        raise NotImplementedError("ЛР6: реализуйте ExpiryBufferRule.__init__ по TASK.md")
+        if isinstance(minimum_days, bool) or not isinstance(minimum_days, int) or minimum_days < 0:
+            raise DomainError("INVALID_CONFIG")
+        self._minimum_days = minimum_days
 
     def check(self, entity, context):
-        raise NotImplementedError("ЛР6: реализуйте ExpiryBufferRule.check по TASK.md")
+        date_only(context.as_of)
+        if (entity.expiration_date - context.as_of).days < self._minimum_days:
+            return CheckResult(False, "CARD_EXPIRING_SOON")
+        return CheckResult(True)
