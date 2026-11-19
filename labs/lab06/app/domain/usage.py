@@ -41,10 +41,18 @@ class UsageRuleGroup(CardUsageRule):
     """Последовательность правил: первый отказ, без изменения входных объектов."""
 
     def __init__(self, rules):
-        raise NotImplementedError("ЛР6: реализуйте UsageRuleGroup.__init__ по TASK.md")
+        rules_tuple = tuple(rules)
+        for rule in rules_tuple:
+            if not isinstance(rule, CardUsageRule):
+                raise DomainError("INVALID_CONFIG")
+        self._rules = rules_tuple
 
     def check(self, entity, context):
-        raise NotImplementedError("ЛР6: реализуйте UsageRuleGroup.check по TASK.md")
+        for rule in self._rules:
+            result = checked(rule.check(entity, context))
+            if not result.allowed:
+                return result
+        return CheckResult(True)
 
 
 class ExpiryBufferRule(CardUsageRule):
