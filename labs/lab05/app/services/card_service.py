@@ -7,7 +7,7 @@ from app.domain.usage import AllowedCardTypeRule, OnlineUsageRule
 class CardService:
     def __init__(self, repository, rules=()):
         self._repository = repository
-        self._rules = [AllowedCardTypeRule({"STANDARD"}), OnlineUsageRule()]  # конкретные объекты пока создаются здесь
+        self._rules = tuple(rules)
 
     def register(self, entity):
         return self._repository.add(entity)
@@ -28,7 +28,15 @@ class CardService:
         self.get(key).close()
 
     def check(self, key, context):
-        raise NotImplementedError("ЛР5: реализуйте CardService.check по TASK.md")
+        card = self.get(key)
+        availability = checked(card.availability(context.as_of))
+        if not availability.allowed:
+            return availability
+        for rule in self._rules:
+            result = checked(rule.check(card, context))
+            if not result.allowed:
+                return result
+        return CheckResult(True)
 
     def check_dates(self, card_id, dates):
         raise NotImplementedError("ЛР5: реализуйте CardService.check_dates по TASK.md")
